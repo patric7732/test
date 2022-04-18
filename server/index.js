@@ -1,9 +1,10 @@
 const express = require('express')
 const app = express()
-const port = 3000
-const cookieParser = require('cookie-parser');
-const { User } = require('./models/User')
-const config = require('./config/key')
+const port = 5000
+const cookieParser = require('cookie-parser');;
+const { User } = require('./models/User');
+const config = require('./config/key');
+const { auth } = require('./middleware/auth');
 
 app.use(express.json()) //For JSON requests
 app.use(express.urlencoded({extended: true}));
@@ -20,13 +21,20 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
-app.post('/register', (req, res) => {
-  //회원가입 할때 필요한 정보들을 client에서 가죠오ㅗ면 그것들을 데이터에서 가져옴
+app.get('/api/hello', (req, res) => {
+  res.send("안녕하세요")
+})
 
+
+
+app.post('/api/users/register', (req, res) => {
+
+  //회원 가입 할떄 필요한 정보들을  client에서 가져오면 
+  //그것들을  데이터 베이스에 넣어준다. 
   const user = new User(req.body)
 
   user.save((err, userInfo) => {
-    if(err) return res.json ({ success: false, err})
+    if (err) return res.json({ success: false, err })
     return res.status(200).json({
       success: true
     })
@@ -68,6 +76,36 @@ app.post('/api/users/login', (req, res) => {
     })
   })
 })
+
+// role 1 어드민    role 2 특정 부서 어드민 
+// role 0 -> 일반유저   role 0이 아니면  관리자 
+app.get('/api/users/auth', auth, (req, res) => {
+  //여기 까지 미들웨어를 통과해 왔다는 얘기는  Authentication 이 True 라는 말.
+  res.status(200).json({
+    _id: req.user._id,
+    isAdmin: req.user.role === 0 ? false : true,
+    isAuth: true,
+    email: req.user.email,
+    name: req.user.name,
+    lastname: req.user.lastname,
+    role: req.user.role,
+    image: req.user.image
+  })
+})
+
+
+app.get('/api/users/logout', auth, (req, res) => {
+  // console.log('req.user', req.user)
+  User.findOneAndUpdate({ _id: req.user._id },
+    { token: "" }
+    , (err, user) => {
+      if (err) return res.json({ success: false, err });
+      return res.status(200).send({
+        success: true
+      })
+    })
+})
+
 
 
 app.listen(port, () => {
