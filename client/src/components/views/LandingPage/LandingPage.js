@@ -1,12 +1,15 @@
 import React, { useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import MapContainer from '../api/MapContainer';
 
 function LandingPage() {
 
   const navigate = useNavigate();
 
   useEffect(() => {
+    MapContainer();
+
     axios.get('/api/hello')
         .then(response => { console.log(response.data) })
 }, [])
@@ -24,6 +27,12 @@ const onClickHandler = () => {
 
 
   return (
+    <>
+    <div id='myMap' style={{
+            width: '100vw',
+            height: '100'
+        }}></div>
+
     <div style={{
       display: 'flex', justifyContent: 'center', alignItems: 'center'
       , width: '100%', height: '100vh'
@@ -35,6 +44,7 @@ const onClickHandler = () => {
       </button>
 
   </div>
+  </>
   )
 }
 
