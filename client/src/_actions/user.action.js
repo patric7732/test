@@ -1,7 +1,9 @@
 import axios from 'axios';
 import {
 LOGIN_USER,
-REGISTER_USER
+REGISTER_USER,
+ADD_COMPANY,
+GET_MARKERS
 } from './types'
 
 export function loginUser(dataToSubmit) {
@@ -24,4 +26,25 @@ export function registerUser(dataToSubmit) {
         type: REGISTER_USER,
         payload: request
     }
+}
+
+export function company(dataToSubmit) {
+
+    const request = axios.post('/api/companies/addcompany', dataToSubmit)
+        .then(response => response.data)
+
+    return {
+        type: ADD_COMPANY,
+        payload: request
+    }
+}
+
+export function getMarker() {
+    const request = axios
+    .get("/api/company")
+    .then((response) => response.data);
+    return {
+    type: GET_MARKERS,
+    payload: request,
+    };
 }

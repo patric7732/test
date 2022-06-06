@@ -3,13 +3,16 @@ const app = express()
 const port = 5000
 const cookieParser = require('cookie-parser');;
 const { User } = require('./models/User');
+const { Company } = require('./models/Company');
 const config = require('./config/key');
 const { auth } = require('./middleware/auth');
+const router = require('express').Router();
+// const cors = require('cors')
 
 app.use(express.json()) //For JSON requests
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
-
+// app.use(cors());
 
 
 const mongoose = require('mongoose')
@@ -17,15 +20,35 @@ mongoose.connect(config.mongoURI, {
 }).then(() => console.log('MongoDB Connected..'))
 .catch(err => console.log(err))
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
 
-app.get('/api/hello', (req, res) => {
-  res.send("안녕하세요")
-})
+// app.get('/api/company',(req,res) => {
+//   Company.find({sort:{createdAt:-1}})
+//   .exec((err,boards)=>{ 
+//       if(err) return res.status(400).send(err)
+//       return res.status(200).json({success: true, boards})
+//   })
+  
+// });
 
 
+app.get('/api/company', (req,res) => {
+
+  var markers = [];
+  
+  Company.find({},{_id:0, "markerpath" : 1}, (err, result) => {
+    if (err) {
+      res.json(err);
+    } else {
+      for (var i=0; i < result.length; i++) {
+        markers.push(result[i].markerpath)
+      }
+
+      return res.status(200).json({
+      markers: markers
+      })
+    }
+  });
+});
 
 app.post('/api/users/register', (req, res) => {
 
@@ -34,6 +57,19 @@ app.post('/api/users/register', (req, res) => {
   const user = new User(req.body)
 
   user.save((err, userInfo) => {
+    if (err) return res.json({ success: false, err })
+    return res.status(200).json({
+      success: true
+    })
+  })
+})
+
+app.post('/api/companies/addcompany', (req, res) => {
+
+  //회사 정보
+  const company = new Company(req.body)
+
+  company.save((err, userInfo) => {
     if (err) return res.json({ success: false, err })
     return res.status(200).json({
       success: true
@@ -105,6 +141,8 @@ app.get('/api/users/logout', auth, (req, res) => {
       })
     })
 })
+
+
 
 
 
